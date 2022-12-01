@@ -7,10 +7,13 @@ public class MissileController : MonoBehaviour
     public GameObject target;
     public float airSpeed = 10;
     public float gain = 3;
+    public float maneuverability = 1;
 
     public Vector3 relativePosition;
     public Vector3 relativeVelocity;
     public Vector3 accelerationCmd;
+    public float turnSpeed;
+    public float tgo;
 
     // Start is called before the first frame update
     void Start()
@@ -31,10 +34,20 @@ public class MissileController : MonoBehaviour
         relativePosition = targetPosition - missilePosition;
         relativeVelocity = targetVelocity - missileVelocity;
 
+        tgo = -relativePosition.magnitude * relativePosition.magnitude / Vector3.Dot(relativePosition, relativeVelocity);
+
 
         // get acceleration command and body rotation rate (in world frame)
-        accelerationCmd = PureProNav(relativePosition, relativeVelocity, gain);
+        accelerationCmd = PureProNav(relativePosition, relativeVelocity, gain);// + Vector3.up * 9.8f * gain/2;
         Vector3 bodyRate = Vector3.Cross(transform.forward, accelerationCmd / airSpeed);
+
+        turnSpeed = bodyRate.magnitude;
+        float pitchLimit = maneuverability * airSpeed;
+
+        if (bodyRate.magnitude > pitchLimit * Mathf.Deg2Rad)
+        {
+            bodyRate = bodyRate.normalized * pitchLimit * Mathf.Deg2Rad;
+        }
 
         // convert to local frame
         Vector3 bodyRateLocal = transform.InverseTransformVector(bodyRate);
