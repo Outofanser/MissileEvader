@@ -24,6 +24,11 @@ public class MissileController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        MissileMovement();
+    }
+
+    void MissileMovement()
+    {
         // get target position and velocity in inertial world frame
         Vector3 targetPosition = target.transform.position;
         Vector3 targetVelocity = target.transform.forward * target.GetComponent<PlayerController>().airSpeed;
@@ -41,13 +46,7 @@ public class MissileController : MonoBehaviour
         accelerationCmd = PureProNav(relativePosition, relativeVelocity, gain);// + Vector3.up * 9.8f * gain/2;
         Vector3 bodyRate = Vector3.Cross(transform.forward, accelerationCmd / airSpeed);
 
-        turnSpeed = bodyRate.magnitude;
-        float pitchLimit = maneuverability * airSpeed;
-
-        if (bodyRate.magnitude > pitchLimit * Mathf.Deg2Rad)
-        {
-            bodyRate = bodyRate.normalized * pitchLimit * Mathf.Deg2Rad;
-        }
+        RestrictBodyRate(bodyRate);
 
         // convert to local frame
         Vector3 bodyRateLocal = transform.InverseTransformVector(bodyRate);
@@ -67,5 +66,17 @@ public class MissileController : MonoBehaviour
         Vector3 accelerationCmd = -gain * speedRatio * Vector3.Cross(Vm, LoSRate);
 
         return accelerationCmd;
+    }
+
+    Vector3 RestrictBodyRate(Vector3 bodyRate)
+    {
+        turnSpeed = bodyRate.magnitude;
+        float pitchLimit = maneuverability * airSpeed;
+
+        if (turnSpeed > pitchLimit * Mathf.Deg2Rad)
+        {
+            return bodyRate.normalized * pitchLimit * Mathf.Deg2Rad;
+        }
+        return bodyRate;
     }
 }
