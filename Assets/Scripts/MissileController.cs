@@ -46,7 +46,7 @@ public class MissileController : MonoBehaviour
         accelerationCmd = PureProNav(relativePosition, relativeVelocity, gain);// + Vector3.up * 9.8f * gain/2;
         Vector3 bodyRate = Vector3.Cross(transform.forward, accelerationCmd / airSpeed);
 
-        RestrictBodyRate(bodyRate);
+        bodyRate = RestrictBodyRate(bodyRate);
 
         // convert to local frame
         Vector3 bodyRateLocal = transform.InverseTransformVector(bodyRate);
