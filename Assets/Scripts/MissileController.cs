@@ -19,8 +19,9 @@ public class MissileController : MonoBehaviour
     private float rho = 1.293f;
     private float area = 1f;
     //private float bodyLength = 1f;
-    
 
+    public bool armed;
+    public bool exploded;
     public float tgo;
     public float attack_limited;
     public float attackAngle;
@@ -30,26 +31,51 @@ public class MissileController : MonoBehaviour
     public float dGain = 0.1f;
     public float iGain = 1f;
 
+    public ParticleSystem explosionParticle;
+    public AudioClip explosionSound;
+    private AudioSource missileAudio;
+    private IEnumerator thrustLooper;
+    public AudioClip thrustSound;
+
+    private ParticleSystem missilePs;
+
     private Vector3 errorLast = Vector3.zero;
     private Vector3 errorAccumulator = Vector3.zero;
+
+    public float vel;
+    private Vector3 relativePosition;
+    public float distance;
 
     // Start is called before the first frame update
     void Start()
     {
         body = GetComponent<Rigidbody>();
         body.AddForce(Vector3.up * airSpeed, ForceMode.VelocityChange);
+        missileAudio = GetComponent<AudioSource>();
+        thrustLooper = LoopAudio(1f);
+        missileAudio.clip = thrustSound;
+        
+        //missileAudio.volume = 0.1f;
+        //missileAudio.loop = true;
+
+        StartCoroutine(thrustLooper);
+
+
+        explosionParticle.Stop();
+        //StartCoroutine(thrustLooper);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //MissileMovement();
+        //MissileMovement()
+        
     }
 
     void FixedUpdate()
     {
         MissileMovement();
-        
+
 
     }
 
@@ -63,13 +89,23 @@ public class MissileController : MonoBehaviour
         ///Vector3 missileVelocity = transform.forward * airSpeed;
         Vector3 missileVelocity = body.velocity;
         // get instantaneous relative position and velocity in world frame (note, relative rotation of local frame and world frame means the frame is relevant!)
-        Vector3 relativePosition = targetPosition - missilePosition;
+        relativePosition = targetPosition - missilePosition;
         Vector3 relativeVelocity = targetVelocity - missileVelocity;
+        distance = relativePosition.magnitude;
 
         tgo = -relativePosition.magnitude * relativePosition.magnitude / Vector3.Dot(relativePosition, relativeVelocity);
 
+        if (tgo < 10 && !gravity_turn)
+        {
+            armed = true;
+        }
+        if (tgo < 0 && armed)
+        {
+            Explode();
+        }
+
         // get acceleration command and body rotation rate (in world frame)
-        Vector3 accelerationCmd = PureProNav(missileVelocity,relativePosition, relativeVelocity, gain);// + Vector3.up * 9.8f * gain/2;
+        Vector3 accelerationCmd = PureProNav(missileVelocity, relativePosition, relativeVelocity, gain);// + Vector3.up * 9.8f * gain/2;
         accelerationCmd += -Physics.gravity;
         if (gravity_turn)
         {
@@ -78,22 +114,22 @@ public class MissileController : MonoBehaviour
             if (accelerationCmd.normalized.y > 0 || accelerationCmd.normalized.y < -0.99f)
             {
                 gravity_turn = false;
-            }     
+            }
         }
 
         Vector3 forward = body.transform.forward;
 
-        float vel = missileVelocity.magnitude;
+        vel = missileVelocity.magnitude;
         float dynamicPressure = 0.5f * rho * vel * vel;
 
-        float dAoA = accelerationCmd.magnitude *body.mass/ area / dynamicPressure  / (2 * Mathf.PI);
-        attack_limited = Mathf.Min(dAoA*Mathf.Rad2Deg, aoa_limit_deg);
+        float dAoA = accelerationCmd.magnitude * body.mass / area / dynamicPressure / (2 * Mathf.PI);
+        attack_limited = Mathf.Min(dAoA * Mathf.Rad2Deg, aoa_limit_deg);
         Vector3 turnDir = Vector3.Cross(missileVelocity, accelerationCmd).normalized;
 
- 
+
         Vector3 desiredForward = Quaternion.AngleAxis(attack_limited, turnDir) * missileVelocity.normalized;
         Vector3 angle = -Vector3.Cross(desiredForward, forward);
-        float phi = Mathf.Asin(angle.magnitude)/Time.fixedDeltaTime;
+        float phi = Mathf.Asin(angle.magnitude) / Time.fixedDeltaTime;
         ///Vector3 control = 1/100f*(phi * angle.normalized - body.angularVelocity)/Time.fixedDeltaTime*body.mass;
 
         Vector3 control = PIDController(Vector3.zero, phi * angle.normalized);
@@ -169,7 +205,7 @@ public class MissileController : MonoBehaviour
 
     Vector3 PIDController(Vector3 startOrientation, Vector3 endOrientation)
     {
-        Vector3 error = (endOrientation - startOrientation)/2f/Mathf.PI;
+        Vector3 error = (endOrientation - startOrientation) / 2f / Mathf.PI;
         Vector3 dError = (error - errorLast) / Time.fixedDeltaTime;
         Vector3 iError = errorAccumulator + error * Time.fixedDeltaTime;
 
@@ -190,6 +226,66 @@ public class MissileController : MonoBehaviour
 
 
         return PID;
+    }
+
+    private void Explode()
+    {
+        if (!exploded)
+        {
+            Damage();
+            exploded = true;
+            StopCoroutine(thrustLooper);
+            explosionParticle.Play();
+            missileAudio.Stop();
+            missileAudio.PlayOneShot(explosionSound, 0.2f);
+            Destroy(gameObject.transform.GetChild(0).gameObject);
+            StartCoroutine(Explosion());
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            Explode();
+        }
+        else if (collision.gameObject.CompareTag("Ground"))
+        {
+            Explode();
+        }
+    }
+
+    IEnumerator Explosion()
+    {
+        yield return new WaitForSeconds(2f);
+        Destroy(gameObject);
+    }
+
+    private void Damage()
+    {
+        float distance = (target.transform.position - transform.position).magnitude;
+
+        float damage = 300f / distance;
+
+        if (damage < 10f)
+        {
+            return;
+        }
+
+        target.GetComponent<PlayerController>().health -= Mathf.Min(damage, 80f);
+        Debug.Log("Player hit! Health is now " + target.GetComponent<PlayerController>().health);
+    }
+
+    IEnumerator LoopAudio(float waitTime)
+    {
+        while (true)
+        {
+            float mywait = Mathf.Max(0.1f,Mathf.Min(1f, distance / 1000f)) * waitTime;
+            missileAudio.time = 0f;
+            missileAudio.Play();
+            yield return new WaitForSeconds(mywait);
+        }
+
     }
 
 }
