@@ -9,6 +9,7 @@ using UnityEngine;
 public class MissileController : MonoBehaviour
 {
     public GameObject target;
+    private Vector3 targetPos;
     public Rigidbody body;
     public float airSpeed = 50;
     public float gain = 3;
@@ -55,6 +56,7 @@ public class MissileController : MonoBehaviour
         thrustLooper = LoopAudio(1f);
         missileAudio.clip = thrustSound;
         
+        
         //missileAudio.volume = 0.1f;
         //missileAudio.loop = true;
 
@@ -69,7 +71,7 @@ public class MissileController : MonoBehaviour
     void Update()
     {
         //MissileMovement()
-        
+        targetPos = target.GetComponent<PlayerController>().centerOfMass.position;
     }
 
     void FixedUpdate()
@@ -82,7 +84,7 @@ public class MissileController : MonoBehaviour
     void MissileMovement()
     {
         // get target position and velocity in inertial world frame
-        Vector3 targetPosition = target.transform.position;
+        Vector3 targetPosition = targetPos;
         Vector3 targetVelocity = target.transform.forward * target.GetComponent<PlayerController>().airSpeed;
         // get missile position and velocity in intertial world frame
         Vector3 missilePosition = transform.position;
@@ -263,7 +265,7 @@ public class MissileController : MonoBehaviour
 
     private void Damage()
     {
-        float distance = (target.transform.position - transform.position).magnitude;
+        float distance = (targetPos - transform.position).magnitude;
 
         float damage = 300f / distance;
 

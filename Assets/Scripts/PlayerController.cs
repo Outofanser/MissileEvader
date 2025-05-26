@@ -22,6 +22,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 initPosition;
     private Quaternion initRotation;
 
+    public GameObject propeller;
+    public Transform centerOfMass;
+
 
     // Start is called before the first frame update
     void Start()
@@ -45,6 +48,7 @@ public class PlayerController : MonoBehaviour
         {
             PlayerMovement();
             ApplyBoundary();
+            propeller.transform.Rotate(new Vector3(0, 0, 1000 * Time.deltaTime));
         }
 
     }

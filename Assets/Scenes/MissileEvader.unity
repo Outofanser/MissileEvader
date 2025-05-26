@@ -177,7 +177,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: da25f806a180103448538bebcb537fd7, type: 2}
+  - {fileID: 2100000, guid: dbcefefa29099884c8d6d65ca6fa324d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -220,7 +220,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &204731147
 Rigidbody:
@@ -408,6 +408,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &493906115 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7683080280032788057, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+    type: 3}
+  m_PrefabInstance: {fileID: 4721762016015599833}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &531315383 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4721762015432934139, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
@@ -510,6 +516,12 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!4 &723060214 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 427450213425274295, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+    type: 3}
+  m_PrefabInstance: {fileID: 4721762016015599833}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -584,7 +596,7 @@ PrefabInstance:
     - target: {fileID: 4721762015432934138, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4721762015432934138, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
         type: 3}
@@ -641,6 +653,16 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 9027994755339164917, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+        type: 3}
+      propertyPath: propeller
+      value: 
+      objectReference: {fileID: 493906115}
+    - target: {fileID: 9027994755339164917, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+        type: 3}
+      propertyPath: centerOfMass
+      value: 
+      objectReference: {fileID: 723060214}
     - target: {fileID: 9027994755339164917, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
         type: 3}
       propertyPath: explosionSound
