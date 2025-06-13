@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Unity.VisualScripting;
-using UnityEditor.PackageManager;
-using UnityEditor.ShaderGraph;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 public class MissileController : MonoBehaviour
@@ -11,6 +10,7 @@ public class MissileController : MonoBehaviour
     public GameObject target;
     private Vector3 targetPos;
     public Rigidbody body;
+    [SerializeField] GameObject missileCOM;
     public float airSpeed = 50;
     public float gain = 3;
     public float aoa_limit_deg = 10;
@@ -51,12 +51,13 @@ public class MissileController : MonoBehaviour
     void Start()
     {
         body = GetComponent<Rigidbody>();
+        body.centerOfMass = missileCOM.transform.localPosition;
         body.AddForce(Vector3.up * airSpeed, ForceMode.VelocityChange);
         missileAudio = GetComponent<AudioSource>();
         thrustLooper = LoopAudio(1f);
         missileAudio.clip = thrustSound;
-        
-        
+
+
         //missileAudio.volume = 0.1f;
         //missileAudio.loop = true;
 
@@ -89,7 +90,7 @@ public class MissileController : MonoBehaviour
         // get missile position and velocity in intertial world frame
         Vector3 missilePosition = transform.position;
         ///Vector3 missileVelocity = transform.forward * airSpeed;
-        Vector3 missileVelocity = body.velocity;
+        Vector3 missileVelocity = body.linearVelocity;
         // get instantaneous relative position and velocity in world frame (note, relative rotation of local frame and world frame means the frame is relevant!)
         relativePosition = targetPosition - missilePosition;
         Vector3 relativeVelocity = targetVelocity - missileVelocity;
@@ -282,12 +283,13 @@ public class MissileController : MonoBehaviour
     {
         while (true)
         {
-            float mywait = Mathf.Max(0.1f,Mathf.Min(1f, distance / 1000f)) * waitTime;
+            float mywait = Mathf.Max(0.1f, Mathf.Min(1f, distance / 1000f)) * waitTime;
             missileAudio.time = 0f;
             missileAudio.Play();
             yield return new WaitForSeconds(mywait);
         }
 
     }
+
 
 }

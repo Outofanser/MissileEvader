@@ -669,6 +669,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   body: {fileID: 0}
+  missileCOM: {fileID: 9119472201120373816}
   airSpeed: 100
   gain: 3
   aoa_limit_deg: 10
