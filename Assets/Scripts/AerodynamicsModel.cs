@@ -16,8 +16,14 @@ public class AerodynamicsModel : MonoBehaviour
     private Rigidbody m_body;
     [SerializeField]
     private Vector3 m_velocity;
-    private float m_dynPressure;
-    public float DynPressure { get { return m_dynPressure; } private set { m_dynPressure = value; } }
+    public float DynPressure
+    {
+        get
+        {
+            return 0.5f * c_rho * Mathf.Pow(m_velocity.magnitude, 2);
+        }
+    }
+
     public float WingArea { get { return m_wingArea; } private set { m_wingArea = value; } }
 
     void Awake()
@@ -29,7 +35,6 @@ public class AerodynamicsModel : MonoBehaviour
     void Update()
     {
         m_velocity = m_body.linearVelocity;
-        m_dynPressure = 0.5f * c_rho * Mathf.Pow(m_velocity.magnitude, 2);
     }
 
     public Vector3 GenerateAeroForces()
@@ -49,8 +54,8 @@ public class AerodynamicsModel : MonoBehaviour
         }
 
 
-        Vector3 lift_force = lift_direction * lift_coefficient * m_dynPressure * m_wingArea;
-        Vector3 drag_force = -m_velocity.normalized * drag_coefficient * m_dynPressure * m_wingArea;
+        Vector3 lift_force = lift_direction * lift_coefficient * DynPressure * m_wingArea;
+        Vector3 drag_force = -m_velocity.normalized * drag_coefficient * DynPressure * m_wingArea;
 
         return lift_force + drag_force;
     }
@@ -61,7 +66,7 @@ public class AerodynamicsModel : MonoBehaviour
 
         float lift_coefficient = 2f * Mathf.PI * m_maxDeflect;
 
-        float max_torque = m_dynPressure * lift_coefficient * m_tailArea * m_tail2CMDistance;
+        float max_torque = DynPressure * lift_coefficient * m_tailArea * m_tail2CMDistance;
         Vector3 desired_torque = control * max_torque;
 
         return desired_torque;
