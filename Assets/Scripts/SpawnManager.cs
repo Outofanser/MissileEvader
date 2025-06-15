@@ -9,14 +9,13 @@ public class SpawnManager : MonoBehaviour
     public float minSpawnRadius = 100;
     public GameObject missilePrefab;
     private GameObject player;
-    // Start is called before the first frame update
+
+
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        missilePrefab.GetComponent<MissileController>().target = player;
     }
 
-    // Update is called once per frame
     void Update()
     {
         int numMissiles = GameObject.FindGameObjectsWithTag("Missile").Length;
@@ -25,7 +24,8 @@ public class SpawnManager : MonoBehaviour
         {
             for (int i = 0; i < waveNumber; i++)
             {
-                Instantiate(missilePrefab, GenerateSpawnPosition(), Quaternion.Euler(new Vector3(-90, 0, 0)));
+                GameObject missile = Instantiate(missilePrefab, GenerateSpawnPosition(), Quaternion.Euler(new Vector3(-90, 0, 0)));
+                missile.GetComponent<Missile>().Target = player;
             }
 
             waveNumber++;
