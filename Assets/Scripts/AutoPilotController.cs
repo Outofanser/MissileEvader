@@ -6,6 +6,8 @@ public class AutoPilotController : MonoBehaviour
     //fields
     private GameObject m_target; 
     [SerializeField]
+    private float m_timeConstant = 0.8f;
+    [SerializeField]
     private float m_angleOfAttackLimit = 10f; // degrees
     private PIDController m_pidController;
     private AerodynamicsModel m_AeroModel;
@@ -86,7 +88,7 @@ public class AutoPilotController : MonoBehaviour
 
         // get the error rate to calculate the control for this time step
         Vector3 error = phi * angle.normalized / 2f / Mathf.PI;
-        Vector3 errorRate = error / Time.deltaTime;
+        Vector3 errorRate = error / m_timeConstant; // Slew control to moderate the error rate
         Vector3 control = m_pidController.PID(errorRate);
 
         return control;
