@@ -77,23 +77,11 @@ public class Missile : MonoBehaviour
         {
             Explode();
         }
+
+        Vector3 attitudeControl = m_AutoPilot.ComputeAutoPilotControl();
+
+        m_AeroModel.SetAttitudeControl(attitudeControl);
     }
-
-    void FixedUpdate()
-    {
-        Vector3 control = m_AutoPilot.GetControl();
-
-        Vector3 torque = m_AeroModel.GenerateControlTorque(control);
-
-        Vector3 aeroForces = m_AeroModel.GenerateAeroForces();
-        m_body.AddForce(aeroForces);
-
-        if (torque.magnitude > 0.001)
-        {
-            m_body.AddTorque(torque);
-        }
-    }
-
 
     private void Explode()
     {

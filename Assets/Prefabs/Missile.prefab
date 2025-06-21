@@ -562,7 +562,6 @@ GameObject:
   - component: {fileID: 1345124909}
   - component: {fileID: 5196629191105789684}
   - component: {fileID: 7391620925903998971}
-  - component: {fileID: 2549006460702943225}
   m_Layer: 0
   m_Name: Missile
   m_TagString: Missile
@@ -748,7 +747,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_missileCOM: {fileID: 9119472201120373816}
-  m_airSpeed: 100
+  m_launchSpeed: 100
   explosionParticle: {fileID: 3224380626908557825}
   explosionSound: {fileID: 8300000, guid: 4bcde6de2166e41e284ec46d8a01fb90, type: 3}
   thrustSound: {fileID: 8300000, guid: 113ee460fadc340e4957a7404a9fbb27, type: 3}
@@ -767,7 +766,8 @@ MonoBehaviour:
   m_wingArea: 1
   m_tailArea: 0.1
   m_maxDeflect: 10
-  m_tail2CMDistance: 0.5
+  m_tailToCMDistance: 2.5
+  m_velocity: {x: 0, y: 0, z: 0}
 --- !u!114 &7391620925903998971
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -782,22 +782,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_timeConstant: 0.8
   m_angleOfAttackLimit: 10
+  m_vertPIDController:
+    pGain: 1
+    iGain: 0.001
+    dGain: 0.2
+  m_horzPIDController:
+    pGain: 1
+    iGain: 0.001
+    dGain: 0.2
+  m_rollPIDController:
+    pGain: 0
+    iGain: 0
+    dGain: 0
+  <IsInPursuit>k__BackingField: 0
+  <NavGain>k__BackingField: 3
   <Tgo>k__BackingField: 0
---- !u!114 &2549006460702943225
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5916614425571799360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 913dcc75e3898e847a342e194415a1ae, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pGain: 1
-  iGain: 0.001
-  dGain: 0.2
 --- !u!1 &6099966194373675435
 GameObject:
   m_ObjectHideFlags: 0
