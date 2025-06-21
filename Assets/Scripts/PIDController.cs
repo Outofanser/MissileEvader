@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [Serializable]
@@ -8,12 +9,12 @@ public class PIDController
     private float m_errorLast;
     //private Vector3 m_errorAccumulator = Vector3.zero;
     private float m_errorAccumulator;
-    [SerializeField] private float pGain = 1f;
-    [SerializeField] private float iGain = 0.001f;
-    [SerializeField] private float dGain = 0.2f;
-    public float PGain { get => pGain; set => pGain = value; }
-    public float IGain { get => iGain; set => iGain = value; }
-    public float DGain { get => dGain; set => dGain = value; }
+    [SerializeField, Min(0)] private float pGain = 1f;
+    [SerializeField, Min(0)] private float iGain = 0.001f;
+    [SerializeField, Min(0)] private float dGain = 0.2f;
+    public float PGain { get => pGain; set { if (value > 0) { pGain = value; } } }
+    public float IGain { get => iGain; set { if (value > 0) { iGain = value; } } }
+    public float DGain { get => dGain; set { if (value > 0) { dGain = value; } } }
 
     public PIDController() { }
     public PIDController(float p, float i, float d)
