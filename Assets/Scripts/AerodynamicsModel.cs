@@ -11,6 +11,8 @@ abstract public class AerodynamicsModel : MonoBehaviour
     protected Rigidbody m_body;
     [SerializeField]
     protected Vector3 m_velocity;
+    [SerializeField]
+    protected float m_stallAoA = 12f;
     public float DynPressure
     {
         get
@@ -56,7 +58,7 @@ abstract public class AerodynamicsModel : MonoBehaviour
         float liftCoefficient = 2f * Mathf.PI * attackAngle * Mathf.Deg2Rad;
         float dragCoefficient = 1f * Mathf.Pow(attackAngle * Mathf.Deg2Rad, 2f);
 
-        if (attackAngle > 12) // Stalling condition
+        if (attackAngle > m_stallAoA) // Stalling condition
         {
             liftCoefficient = Mathf.Sin(2f * attackAngle * Mathf.Deg2Rad);
             dragCoefficient = 1f - Mathf.Cos(2f * attackAngle * Mathf.Deg2Rad);
