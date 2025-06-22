@@ -9,7 +9,7 @@ public class AutoPilotController : MonoBehaviour
     [SerializeField]
     private float m_timeConstant = 0.8f;
     [SerializeField]
-    private float m_angleOfAttackLimit_deg = 10f; // degrees
+    private float m_angleOfAttackLimit_deg;
     [Header("Vertical Pitch PID")]
     [SerializeField] private PIDController m_vertPIDController;
     [Header("Horizontal Pitch PID")]
@@ -51,6 +51,11 @@ public class AutoPilotController : MonoBehaviour
 
         m_AeroModel = GetComponent<AerodynamicsModel>();
         m_body = GetComponent<Rigidbody>();
+    }
+
+    void Start()
+    {
+        m_angleOfAttackLimit_deg = m_AeroModel.StallAoA_deg - 2f;
     }
 
     void Update()
