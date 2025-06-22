@@ -1,42 +1,58 @@
+using System;
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class PIDController : MonoBehaviour
+[Serializable]
+public class PIDController
 {
-    private Vector3 m_errorLast = Vector3.zero;
-    private Vector3 m_errorAccumulator = Vector3.zero;
-    [SerializeField]
-    private float pGain = 1f;
-    [SerializeField]
-    private float iGain = 0.001f;
-    [SerializeField]
-    private float dGain = 0.2f;
+    //private Vector3 m_errorLast = Vector3.zero;
+    private float m_errorLast;
+    //private Vector3 m_errorAccumulator = Vector3.zero;
+    private float m_errorAccumulator;
+    [SerializeField, Min(0)] private float pGain = 6f;
+    [SerializeField, Min(0)] private float iGain = 0.001f;
+    [SerializeField, Min(0)] private float dGain = 0.5f;
+    public float PGain { get => pGain; set { if (value > 0) { pGain = value; } } }
+    public float IGain { get => iGain; set { if (value > 0) { iGain = value; } } }
+    public float DGain { get => dGain; set { if (value > 0) { dGain = value; } } }
 
-    void Start()
+    public PIDController() { }
+    public PIDController(float p, float i, float d)
     {
-
+        pGain = p;
+        iGain = i;
+        dGain = d;
     }
-
-    public Vector3 PID(Vector3 error)
+    public float PID(float error)
     {
-        Vector3 dError = (error - m_errorLast) / Time.fixedDeltaTime;
-        Vector3 iError = m_errorAccumulator + error * Time.fixedDeltaTime;
+        float dError = (error - m_errorLast) / Time.fixedDeltaTime;
+        float iError = m_errorAccumulator + error * Time.fixedDeltaTime;
 
-        if (m_errorLast == Vector3.zero)
+        if (m_errorLast == 0)
         {
-            dError = Vector3.zero;
+            dError = 0;
         }
 
-        Vector3 PID = pGain * error + dGain * dError + iGain * iError;
+        float PID = pGain * error + dGain * dError + iGain * iError;
 
-        if (PID.magnitude > 1)
+        if (PID > 1)
         {
-            PID = PID.normalized;
+            PID = 1;
+        }
+        else if (PID < -1)
+        {
+            PID = -1;
         }
 
         m_errorLast = error;
         m_errorAccumulator += error;
 
-
         return PID;
+    }
+
+    public void Reset()
+    {
+        m_errorLast = 0;
+        m_errorAccumulator = 0;
     }
 }

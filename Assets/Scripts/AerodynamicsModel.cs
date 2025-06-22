@@ -1,24 +1,28 @@
+
 using System.Runtime.InteropServices.WindowsRuntime;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Timeline;
 
-public class AerodynamicsModel : MonoBehaviour
+abstract public class AerodynamicsModel : MonoBehaviour
 {
-
     private const float c_rho = 1.293f;
+
+    protected Rigidbody m_body;
     [SerializeField]
-    private float m_wingArea = 1f;
+    protected Vector3 m_velocity;
     [SerializeField]
-    private float m_tailArea = 0.1f;
-    [SerializeField]
-    private float m_maxDeflect = 10f;
-    [SerializeField]
-    private float m_tail2CMDistance = 0.5f;
-    private Rigidbody m_body;
-    [SerializeField]
-    private Vector3 m_velocity;
-    private float m_dynPressure;
-    public float DynPressure { get { return m_dynPressure; } private set { m_dynPressure = value; } }
-    public float WingArea { get { return m_wingArea; } private set { m_wingArea = value; } }
+    protected float m_stallAoA_deg = 12f;
+    public float StallAoA_deg { get => m_stallAoA_deg; set => m_stallAoA_deg = value; }
+    public float DynPressure
+    {
+        get
+        {
+            return 0.5f * c_rho * Mathf.Pow(m_velocity.magnitude, 2);
+        }
+    }
+    protected Vector3 m_control;
+    public abstract float WingArea { get; }
 
     void Awake()
     {
@@ -29,43 +33,50 @@ public class AerodynamicsModel : MonoBehaviour
     void Update()
     {
         m_velocity = m_body.linearVelocity;
-        m_dynPressure = 0.5f * c_rho * Mathf.Pow(m_velocity.magnitude, 2);
     }
 
-    public Vector3 GenerateAeroForces()
+    void FixedUpdate()
+    {
+
+        Vector3 torque_local = CalculateLocalAttitudeMoment(m_control);
+        Vector3 aeroForces = CalculateAeroForces();
+
+        m_body.AddForce(aeroForces);
+
+        if (torque_local.magnitude > 0.001)
+        {
+            m_body.AddRelativeTorque(torque_local);
+        }
+    }
+
+    virtual public Vector3 CalculateAeroForces()
     {
         Vector3 body2velAngle = Vector3.Cross(m_body.transform.forward, m_velocity);
-        Vector3  lift_direction= Vector3.Cross(m_velocity, body2velAngle).normalized;
+        Vector3 liftDirection = Vector3.Cross(m_velocity, body2velAngle).normalized;
 
         float attackAngle = Vector3.Angle(m_body.transform.forward, m_velocity);
 
-        float lift_coefficient = 2f * Mathf.PI * attackAngle * Mathf.Deg2Rad;
-        float drag_coefficient = 1f * Mathf.Pow(attackAngle * Mathf.Deg2Rad, 2f);
+        float liftCoefficient = 2f * Mathf.PI * attackAngle * Mathf.Deg2Rad;
+        float dragCoefficient = 1f * Mathf.Pow(attackAngle * Mathf.Deg2Rad, 2f);
 
-        if (attackAngle > 12) // Stalling condition
+        if (attackAngle > m_stallAoA_deg) // Stalling condition
         {
-            lift_coefficient = Mathf.Sin(2f * attackAngle * Mathf.Deg2Rad);
-            drag_coefficient = 1f - Mathf.Cos(2f * attackAngle * Mathf.Deg2Rad);
+            liftCoefficient = Mathf.Sin(2f * attackAngle * Mathf.Deg2Rad);
+            dragCoefficient = 1f - Mathf.Cos(2f * attackAngle * Mathf.Deg2Rad);
         }
 
 
-        Vector3 lift_force = lift_direction * lift_coefficient * m_dynPressure * m_wingArea;
-        Vector3 drag_force = -m_velocity.normalized * drag_coefficient * m_dynPressure * m_wingArea;
+        Vector3 liftForce = liftDirection * liftCoefficient * DynPressure * WingArea;
+        Vector3 dragForce = -m_velocity.normalized * dragCoefficient * DynPressure * WingArea;
 
-        return lift_force + drag_force;
+        return liftForce + dragForce; // in world frame
     }
 
-    public Vector3 GenerateControlTorque(Vector3 control)
+    abstract public Vector3 CalculateLocalAttitudeMoment(Vector3 attitudeControl);
+
+    virtual public void SetAttitudeControl(Vector3 control)
     {
-
-
-        float lift_coefficient = 2f * Mathf.PI * m_maxDeflect;
-
-        float max_torque = m_dynPressure * lift_coefficient * m_tailArea * m_tail2CMDistance;
-        Vector3 desired_torque = control * max_torque;
-
-        return desired_torque;
-
+        m_control = control; // Could add slew rates
     }
 
 }
