@@ -45,9 +45,9 @@ public class AutoPilotController : MonoBehaviour
     void Awake()
     {
         //m_pidController = GetComponent<PIDController>();
-        m_vertPIDController = new PIDController(6f,0.001f,0.2f);
-        m_horzPIDController = new PIDController(6f,0.001f,0.2f);
-        m_rollPIDController = new PIDController(0.1f, 0, 0);
+        m_vertPIDController = new PIDController();
+        m_horzPIDController = new PIDController();
+        m_rollPIDController = new PIDController();
 
         m_AeroModel = GetComponent<AerodynamicsModel>();
         m_body = GetComponent<Rigidbody>();

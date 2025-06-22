@@ -18,13 +18,13 @@ public class Missile : MonoBehaviour
 
 
     [SerializeField]
-    private ParticleSystem explosionParticle;
+    private ParticleSystem m_explosionParticle;
     [SerializeField]
-    private AudioClip explosionSound;
-    private AudioSource missileAudio;
-    private IEnumerator thrustLooper;
+    private AudioClip m_explosionSound;
+    private AudioSource m_missileAudio;
+    private IEnumerator m_thrustLooper;
     [SerializeField]
-    private AudioClip thrustSound;
+    private AudioClip m_thrustSound;
 
     private AerodynamicsModel m_AeroModel;
     private AutoPilotController m_AutoPilot;
@@ -43,25 +43,24 @@ public class Missile : MonoBehaviour
     void Awake()
     {
         m_body = GetComponent<Rigidbody>();
-        missileAudio = GetComponent<AudioSource>();
+        m_missileAudio = GetComponent<AudioSource>();
         m_AeroModel = GetComponent<AerodynamicsModel>();
         m_AutoPilot = GetComponent<AutoPilotController>();
     }
 
     void Start()
-    {
-        
+    {      
         m_body.centerOfMass = m_missileCOM.transform.localPosition;
         m_body.AddForce(Vector3.up * m_launchSpeed, ForceMode.VelocityChange);
         
-        thrustLooper = LoopAudio(1f);
-        missileAudio.clip = thrustSound;
+        m_thrustLooper = LoopAudio(1f);
+        m_missileAudio.clip = m_thrustSound;
 
         m_AutoPilot.Target = m_target;
 
-        StartCoroutine(thrustLooper);
+        StartCoroutine(m_thrustLooper);
 
-        explosionParticle.Stop();
+        m_explosionParticle.Stop();
 
     }
 
@@ -89,10 +88,10 @@ public class Missile : MonoBehaviour
         {
             Damage();
             m_exploded = true;
-            StopCoroutine(thrustLooper);
-            explosionParticle.Play();
-            missileAudio.Stop();
-            missileAudio.PlayOneShot(explosionSound, 0.2f);
+            StopCoroutine(m_thrustLooper);
+            m_explosionParticle.Play();
+            m_missileAudio.Stop();
+            m_missileAudio.PlayOneShot(m_explosionSound, 0.2f);
             Destroy(gameObject.transform.GetChild(0).gameObject);
             StartCoroutine(Explosion());
         }
@@ -136,8 +135,8 @@ public class Missile : MonoBehaviour
         while (true)
         {
             float mywait = Mathf.Max(0.1f, Mathf.Min(1f, m_AutoPilot.RelativePosition.magnitude / 1000f)) * waitTime;
-            missileAudio.time = 0f;
-            missileAudio.Play();
+            m_missileAudio.time = 0f;
+            m_missileAudio.Play();
             yield return new WaitForSeconds(mywait);
         }
 

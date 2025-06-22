@@ -4,22 +4,13 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Timeline;
 
-public class AerodynamicsModel : MonoBehaviour
+abstract public class AerodynamicsModel : MonoBehaviour
 {
     private const float c_rho = 1.293f;
+
+    protected Rigidbody m_body;
     [SerializeField]
-    private float m_wingArea = 1f;
-    [SerializeField]
-    private float m_finArea = 0.1f;
-    [SerializeField]
-    private float m_finMaxDeflect_deg = 40f;
-    [SerializeField]
-    private float m_tailToCMDistance = 2.5f;
-    [SerializeField]
-    private float m_missileRadius = 0.3f;
-    private Rigidbody m_body;
-    [SerializeField]
-    private Vector3 m_velocity;
+    protected Vector3 m_velocity;
     public float DynPressure
     {
         get
@@ -27,8 +18,8 @@ public class AerodynamicsModel : MonoBehaviour
             return 0.5f * c_rho * Mathf.Pow(m_velocity.magnitude, 2);
         }
     }
-    private Vector3 m_control;
-    public float WingArea { get { return m_wingArea; } private set { m_wingArea = value; } }
+    protected Vector3 m_control;
+    public abstract float WingArea { get; }
 
     void Awake()
     {
@@ -55,7 +46,7 @@ public class AerodynamicsModel : MonoBehaviour
         }
     }
 
-    public Vector3 CalculateAeroForces()
+    virtual public Vector3 CalculateAeroForces()
     {
         Vector3 body2velAngle = Vector3.Cross(m_body.transform.forward, m_velocity);
         Vector3 liftDirection = Vector3.Cross(m_velocity, body2velAngle).normalized;
@@ -72,34 +63,15 @@ public class AerodynamicsModel : MonoBehaviour
         }
 
 
-        Vector3 liftForce = liftDirection * liftCoefficient * DynPressure * m_wingArea;
-        Vector3 dragForce = -m_velocity.normalized * dragCoefficient * DynPressure * m_wingArea;
+        Vector3 liftForce = liftDirection * liftCoefficient * DynPressure * WingArea;
+        Vector3 dragForce = -m_velocity.normalized * dragCoefficient * DynPressure * WingArea;
 
         return liftForce + dragForce; // in world frame
     }
 
-    public Vector3 CalculateLocalAttitudeMoment(Vector3 attitudeControl)
-    {
+    abstract public Vector3 CalculateLocalAttitudeMoment(Vector3 attitudeControl);
 
-        if (attitudeControl.magnitude > 1)
-        {
-            attitudeControl = attitudeControl.normalized;
-        }
-
-        float liftCoefficient = 2f * Mathf.PI * m_finMaxDeflect_deg * Mathf.Deg2Rad; //* Mathf.Deg2Rad;
-
-        float maxTorque = 4 * DynPressure * liftCoefficient * m_finArea * m_tailToCMDistance;
-        float maxRollTorque = 4 * DynPressure * liftCoefficient * m_finArea * m_missileRadius;
-        Vector3 attitudeMoment_local = Vector3.zero;
-        attitudeMoment_local.x = attitudeControl.x * maxTorque;
-        attitudeMoment_local.y = attitudeControl.y * maxTorque;
-        attitudeMoment_local.z = attitudeControl.z * maxRollTorque;
-
-        return attitudeMoment_local; // in local frame
-
-    }
-
-    public void SetAttitudeControl(Vector3 control)
+    virtual public void SetAttitudeControl(Vector3 control)
     {
         m_control = control; // Could add slew rates
     }
