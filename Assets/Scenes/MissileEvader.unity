@@ -604,6 +604,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2795348011267198640, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+        type: 3}
+      propertyPath: m_stallAoA_deg
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3100666304974989504, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
+        type: 3}
+      propertyPath: m_ImplicitTensor
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3802353106296654703, guid: 73fb3bf0d427ef44b8362f6470d5de2b,
         type: 3}
       propertyPath: playOnAwake

@@ -34,7 +34,4 @@ public class MissileAeroModel : AerodynamicsModel
         return attitudeMoment_local; // in local frame
 
     }
-
-
-
 }
