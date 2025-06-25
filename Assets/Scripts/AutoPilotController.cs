@@ -10,11 +10,11 @@ public class AutoPilotController : MonoBehaviour
     private float m_timeConstant = 0.8f;
     [SerializeField]
     private float m_angleOfAttackLimit_deg;
-    [Header("Vertical Pitch PID")]
+    [Header("Vertical Attitude PID")]
     [SerializeField] private PIDController m_vertPIDController;
-    [Header("Horizontal Pitch PID")]
+    [Header("Horizontal Attitude PID")]
     [SerializeField] private PIDController m_horzPIDController;
-    [Header("Roll Pitch PID")]
+    [Header("Roll Attitude PID")]
     [SerializeField] private PIDController m_rollPIDController;
     private AerodynamicsModel m_AeroModel;
     private Vector3 m_velocity;
@@ -60,7 +60,7 @@ public class AutoPilotController : MonoBehaviour
 
     void Update()
     {
-        Vector3 targetPosition = m_target.GetComponent<PlayerController>().centerOfMass.position;
+        Vector3 targetPosition = m_target.GetComponent<PlayerController>().transform.position;
         Vector3 targetVelocity = m_target.transform.forward * m_target.GetComponent<PlayerController>().airSpeed;
         RelativePosition = targetPosition - transform.position;
         RelativeVelocity = targetVelocity - m_body.linearVelocity;
