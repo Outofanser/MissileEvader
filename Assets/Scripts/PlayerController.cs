@@ -2,13 +2,16 @@ using Microsoft.Win32.SafeHandles;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    public float pitchRate = 20; // deg/s
-    public float rollRate = 30;
-    public float yawRate = 10;
+    InputAction attitudeAction;
+    InputAction yawAction;
+    InputAction lookAction;
+    float maxHorzLookAngle_deg = 170;
+    float maxVertLookAngle_deg = 90;
     public float airSpeed = 30; // m/s
 
     public float health = 100;
@@ -51,17 +54,18 @@ public class PlayerController : MonoBehaviour
 
         m_cameraOffset = m_playerCam.transform.localPosition;
         m_cameraLookAngle = m_playerCam.transform.localRotation;
+
+        lookAction = InputSystem.actions.FindAction("FlightControl/Look");
+        attitudeAction = InputSystem.actions.FindAction("FlightControl/Attitude");
+        yawAction = InputSystem.actions.FindAction("FlightControl/Yaw");
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 velocityCoord_local = Quaternion.Inverse(transform.rotation) * m_body.linearVelocity;
-        if (velocityCoord_local != Vector3.zero)
-        {
-            m_playerCam.transform.localPosition = Quaternion.LookRotation(velocityCoord_local) * m_cameraOffset;
-            m_playerCam.transform.localRotation = Quaternion.LookRotation(velocityCoord_local) * m_cameraLookAngle;
-        }
+
+        ApplyCameraRotation();
+
         if (health < 0 && !destroyed)
         {
             destroyed = true;
@@ -70,43 +74,44 @@ public class PlayerController : MonoBehaviour
 
         if (!destroyed)
         {
-            //PlayerMovement();
+            ApplyPlayerInput();
             ApplyBoundary();
             propeller.transform.Rotate(new Vector3(0, 0, 1000 * Time.deltaTime));
         }
 
     }
 
-    /*     void PlayerMovement()
-        {
-            // Move player forward in forward direction (not realistic physics)
-            transform.Translate(Vector3.forward * airSpeed * Time.deltaTime);
-
-            // get inputs to attitude controls
-            Vector3 playerAttitudeInput = new Vector3(-Input.GetAxis("Pitch"), -Input.GetAxis("Yaw"), -Input.GetAxis("Roll"));
-            // scale inputs to body moments (body rates)
-            Vector3 rotationRate = Vector3.Scale(playerAttitudeInput, new Vector3(pitchRate, yawRate, rollRate));
-
-            acceleration = Vector3.Cross(Vector3.forward * airSpeed, rotationRate); // may be useful information to use truth data with missile system
-
-            // Rotate player via inputs
-            transform.Rotate(rotationRate * Time.deltaTime);
-        } */
-    void FixedUpdate()
+    void ApplyCameraRotation()
     {
-        if (destroyed)
-        {
-            return;
-        }
+        m_playerCam.transform.localRotation = m_cameraLookAngle;
+        m_playerCam.transform.localPosition = m_cameraOffset;
 
-        Vector3 playerAttitudeInput = new Vector3(-Input.GetAxis("Pitch"), -Input.GetAxis("Yaw"), -Input.GetAxis("Roll"));
+        Vector2 lookInput = lookAction.ReadValue<Vector2>();
+
+        m_playerCam.transform.RotateAround(transform.position, transform.up, maxHorzLookAngle_deg * lookInput.x);
+        m_playerCam.transform.RotateAround(transform.position, transform.right, maxVertLookAngle_deg * lookInput.y);
+
+
+        Vector3 attackAngleAxis = Vector3.Cross(transform.forward, m_body.linearVelocity.normalized);
+        float attackAngle = Mathf.Asin(attackAngleAxis.magnitude);
+        m_playerCam.transform.RotateAround(transform.position, attackAngleAxis, attackAngle*Mathf.Rad2Deg);
+
+    }
+
+    void ApplyPlayerInput()
+    {
+        Vector2 attitudeInput = attitudeAction.ReadValue<Vector2>();
+        Vector3 playerAttitudeInput = Vector3.zero;
+
+        playerAttitudeInput.x = attitudeInput.y;
+        playerAttitudeInput.y = yawAction.ReadValue<float>();
+        playerAttitudeInput.z = -attitudeInput.x;
 
         // clamp the player pitch, we will add control to remove the clamp later
         playerAttitudeInput.x = MinMax(-0.3f, 0.3f, playerAttitudeInput.x);
 
         m_AeroModel.SetAttitudeControl(playerAttitudeInput);
-
-    }
+    } 
 
     void ApplyBoundary()
     {
