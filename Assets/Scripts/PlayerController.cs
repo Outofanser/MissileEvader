@@ -88,8 +88,10 @@ public class PlayerController : MonoBehaviour
 
         Vector2 lookInput = lookAction.ReadValue<Vector2>();
 
-        m_playerCam.transform.RotateAround(transform.position, transform.up, maxHorzLookAngle_deg * lookInput.x);
+        
         m_playerCam.transform.RotateAround(transform.position, transform.right, maxVertLookAngle_deg * lookInput.y);
+        m_playerCam.transform.RotateAround(transform.position, transform.up, maxHorzLookAngle_deg * lookInput.x);
+        //m_playerCam.transform.Rotate(maxHorzLookAngle_deg * lookInput.x, maxVertLookAngle_deg * lookInput.y, 0);
 
 
         Vector3 attackAngleAxis = Vector3.Cross(transform.forward, m_body.linearVelocity.normalized);
