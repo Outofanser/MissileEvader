@@ -87,12 +87,9 @@ public class PlayerController : MonoBehaviour
         m_playerCam.transform.localPosition = m_cameraOffset;
 
         Vector2 lookInput = lookAction.ReadValue<Vector2>();
-
         
         m_playerCam.transform.RotateAround(transform.position, transform.right, maxVertLookAngle_deg * lookInput.y);
         m_playerCam.transform.RotateAround(transform.position, transform.up, maxHorzLookAngle_deg * lookInput.x);
-        //m_playerCam.transform.Rotate(maxHorzLookAngle_deg * lookInput.x, maxVertLookAngle_deg * lookInput.y, 0);
-
 
         Vector3 attackAngleAxis = Vector3.Cross(transform.forward, m_body.linearVelocity.normalized);
         float attackAngle = Mathf.Asin(attackAngleAxis.magnitude);
@@ -110,7 +107,7 @@ public class PlayerController : MonoBehaviour
         playerAttitudeInput.z = -attitudeInput.x;
 
         // clamp the player pitch, we will add control to remove the clamp later
-        playerAttitudeInput.x = MinMax(-0.3f, 0.3f, playerAttitudeInput.x);
+        playerAttitudeInput.x = MinMax(-0.6f, 0.6f, playerAttitudeInput.x);
 
         m_AeroModel.SetAttitudeControl(playerAttitudeInput);
     } 

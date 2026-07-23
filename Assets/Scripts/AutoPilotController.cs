@@ -61,7 +61,7 @@ public class AutoPilotController : MonoBehaviour
     void Update()
     {
         Vector3 targetPosition = m_target.GetComponent<PlayerController>().transform.position;
-        Vector3 targetVelocity = m_target.transform.forward * m_target.GetComponent<PlayerController>().airSpeed;
+        Vector3 targetVelocity = m_target.transform.forward * m_target.GetComponent<AerodynamicsModel>().AirSpeed;
         RelativePosition = targetPosition - transform.position;
         RelativeVelocity = targetVelocity - m_body.linearVelocity;
 
@@ -89,7 +89,7 @@ public class AutoPilotController : MonoBehaviour
 
     public Vector3 ComputeAutoPilotControl()
     {
-        float area = m_AeroModel.WingArea;
+        float area = m_AeroModel.LiftArea;
         float dynamicPressure = m_AeroModel.DynPressure;
 
         // Lift Force ~= 2pi * AoA * dynP * area
@@ -106,7 +106,9 @@ public class AutoPilotController : MonoBehaviour
 
         Quaternion worldToBodyRotation = Quaternion.Inverse(transform.rotation);
 
-        Vector3 alignmentError_local = worldToBodyRotation * misalignmentAxis.normalized * misalignmentAngle;  // z component should be zero      
+        Vector3 alignmentError_local = worldToBodyRotation * misalignmentAxis.normalized * misalignmentAngle;  // z component should be zero
+
+        //Debug.Log("error: " + Vector3.Angle(transform.forward,alignmentError_local));      
         
         // get the error rate to calculate the control for this time step
         Vector3 alignmentErrorRate_local = alignmentError_local / m_timeConstant; // Slew control to moderate the error rate
@@ -119,6 +121,11 @@ public class AutoPilotController : MonoBehaviour
         //attitudeControl.z = m_rollPIDController.PID(-angularVelocity_local.z/2f/Mathf.PI);
 
         // could also add a cascade PID control: sets a desired rate from the error in outer PID and an inner PID controls the error rate
+
+        if (attitudeControl.magnitude > 1)
+        {
+            attitudeControl = attitudeControl.normalized;
+        }
 
         return attitudeControl;
     }
